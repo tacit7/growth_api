@@ -1,11 +1,26 @@
+# frozen_string_literal: true
+
 Rails.application.routes.draw do
   # Root path (for HTML fallback or base landing page)
   root 'home#index'
 
-  # Admin routes (HTML only)
-  # devise_for :admins, path: 'admin', controllers: {
-  #   sessions: 'admin/sessions'
-  # }
+
+  namespace :admin do
+    get '/dashboard', to: 'dashboard#index'
+    get '/events', to: 'events#index'
+  end
+
+  devise_for :users,
+    path: '',
+    path_names: {
+      sign_in:      'login',
+      sign_out:     'logout',
+      registration: 'signup',
+    },
+    controllers: {
+      sessions:      'sessions',
+      registrations: 'registrations',
+    }
 
   # API routes, versioned as v1, using controllers in app/controllers/api/v1/
   namespace :v1, module: 'api/v1', path: '/v1' do

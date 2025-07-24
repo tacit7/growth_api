@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 source "https://rubygems.org"
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
@@ -16,8 +18,6 @@ gem "turbo-rails"
 gem "stimulus-rails"
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 gem "jbuilder"
-# Use Redis adapter to run Action Cable in production
-# gem "redis", ">= 4.0.1"
 
 # Use Kredis to get higher-level data types in Redis [https://github.com/rails/kredis]
 # gem "kredis"
@@ -35,7 +35,12 @@ gem "bootsnap", require: false
 # gem "image_processing", "~> 1.2"
 
 group :development, :test do
+  gem "factory_bot_rails"  # test data factories
+  gem "faker"              # fake test data
+  gem 'htmlbeautifier'
   gem "ruby-lsp"
+  gem 'pry-rails'
+  gem 'pry-byebug'
   gem "rubocop"
   gem "rubocop-rails"
   gem "rubocop-packaging"
@@ -61,15 +66,17 @@ gem "bcrypt", "~> 3.1.7" # password hashing
 gem "rack-cors"          # enable cross-origin requests
 gem "jsonapi-serializer" # fast JSON:API compliant serializer
 
+gem "mongo", "~> 2.21"
+
+gem "mongoid", "~> 9.0"
 # Utilities
 gem "redis"              # caching and pub/sub
-gem "pry-rails"          # debugging
 gem "dotenv-rails"       # env vars for dev/test
+gem 'kaminari'           # pagination
+gem 'kaminari-mongoid'   # pagination
 
 group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
-  gem "factory_bot_rails"  # test data factories
-  gem "faker"              # fake test data
   gem "web-console"
 end
 
@@ -79,3 +86,10 @@ group :test do
   gem "capybara"
   gem "selenium-webdriver"
 end
+
+gem "sidekiq", "~> 8.0"
+gem 'pundit'
+
+gem "rest-client", "~> 2.1"
+
+gem "dockerfile-rails", ">= 1.7", :group => :development

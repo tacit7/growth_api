@@ -1,0 +1,30 @@
+<div class="content-centered">
+  <h1>Admin Dashboard</h1>
+  <p>Welcome, <%= current_user.email %></p>
+  <section>
+    <h2>Quick Stats</h2>
+    <ul>
+      <li>Total Users: <%= User.count %></li>
+      <li>Premium Subscriptions: <%= User.where(subscription_type: "premium").count %></li>
+    </ul>
+  </section>
+  <section>
+    <h2>Recent Signups</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th>Signed Up At</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% User.order(created_at: :desc).limit(10).each do |user| %>
+          <tr>
+            <td><%= user.email %></td>
+            <td><%= user.created_at.strftime("%b %d, %Y") %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </section>
+</div>

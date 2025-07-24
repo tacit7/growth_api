@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Admin
   class SessionsController < Devise::SessionsController
     # layout 'admin' # Optional: if you have a separate layout for admin

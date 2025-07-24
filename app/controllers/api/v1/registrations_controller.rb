@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Api
   module V1
     class RegistrationsController < Devise::RegistrationsController
@@ -13,7 +15,7 @@ module Api
             sign_up(resource_name, resource)
             render json: {
               message: 'Success',
-              user: UserSerializer.new(resource).serializable_hash[:data][:attributes]
+              user: UserSerializer.new(resource).serializable_hash[:data][:attributes],
             }, status: :created
           else
             expire_data_after_sign_in!

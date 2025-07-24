@@ -1,0 +1,44 @@
+<table>
+  <thead>
+    <tr>
+      <th>User</th>
+      <th>Event Type</th>
+      <th>Occurred At</th>
+      <th>Metadata</th>
+      <th>IP Address</th>
+      <th>User Agent</th>
+    </tr>
+  </thead>
+  <tbody>
+    <div class="content-centered">
+      <%= paginate @events %>
+    </div>
+    <% @events.each do |event| %>
+      <tr>
+        <td>
+          <% if event.user_id.present? %>
+            <% user = User.find_by(id: event.user_id) %>
+            <%= user&.email || "Deleted User (ID: #{event.user_id})" %>
+          <% else %>
+            Anonymous
+          <% end %>
+        </td>
+        <td>
+          <% event_name = EventLog::EVENT_TYPE_NAMES[event.event_type] || "Unknown" %>
+          <strong><%= event_name %></strong> <small>(<%= event.event_type %>)</small>
+        </td>
+        <td><%= event.occurred_at&.strftime("%Y-%m-%d %H:%M:%S") %></td>
+        <td>
+          <% event.event_data&.each do |key, value| %>
+            <strong><%= key %>:</strong> <%= value %><br>
+          <% end %>
+        </td>
+        <td><%= event.ip_address %></td>
+        <td><%= truncate(event.user_agent, length: 60) %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+<div class="content-centered">
+  <%= paginate @events %>
+</div>

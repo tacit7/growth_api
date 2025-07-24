@@ -56,7 +56,7 @@ Layout/HashAlignment:
 
 # Style
 Style/Documentation:
-  Enabled: true
+  Enabled: false
 
 Style/FrozenStringLiteralComment:
   Enabled: true
