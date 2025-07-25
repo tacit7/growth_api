@@ -66,11 +66,10 @@ gem "redis"              # caching and pub/sub
 gem "pry-rails"          # debugging
 gem "dotenv-rails"       # env vars for dev/test
 
-group :development do
+group :development, :test do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "factory_bot_rails"  # test data factories
   gem "faker"              # fake test data
-  gem "web-console"
 end
 
 group :test do
@@ -79,3 +78,13 @@ group :test do
   gem "capybara"
   gem "selenium-webdriver"
 end
+group :development do
+  gem "web-console"
+end
+
+gem "sidekiq", "~> 8.0"
+gem 'pundit'
+
+gem "rest-client", "~> 2.1"
+
+gem "dockerfile-rails", ">= 1.7", group: :development
