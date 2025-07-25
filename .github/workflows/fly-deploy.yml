@@ -8,6 +8,7 @@ on:
 jobs:
   deploy:
     name: Deploy app
+    runs-on: ruby:3.3.4-slim
     concurrency: deploy-group # optional: ensure only one action runs at a time
     steps:
       - uses: actions/checkout@v4
