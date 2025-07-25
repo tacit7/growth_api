@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # app/controllers/concerns/rate_limitable.rb
 module RateLimitable
   extend ActiveSupport::Concern

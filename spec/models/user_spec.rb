@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 RSpec.describe User, type: :model do
@@ -26,12 +28,12 @@ RSpec.describe User, type: :model do
 
   describe 'defaults' do
     it 'sets default role to user' do
-      user = User.new
+      user = described_class.new
       expect(user.role).to eq('user')
     end
 
     it 'sets default subscription_type to free' do
-      user = User.new
+      user = described_class.new
       expect(user.subscription_type).to eq('free')
     end
   end

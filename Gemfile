@@ -92,4 +92,4 @@ gem 'pundit'
 
 gem "rest-client", "~> 2.1"
 
-gem "dockerfile-rails", ">= 1.7", :group => :development
+gem "dockerfile-rails", ">= 1.7", group: :development
