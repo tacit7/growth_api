@@ -26,10 +26,9 @@ module Api
       end
       def respond_with(resource, _opts = {})
         token = request.env['warden-jwt_auth.token']
-        resource.update(jti: token)
         render json: {
           message: 'Logged in successfully',
-          user: UserSerializer.new(resource).serializable_hash,
+          user: UserSerializer.new(resource).serializable_hash[:data][:attributes],
           token: token,
         }, status: :ok
       end
