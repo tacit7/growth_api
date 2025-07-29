@@ -1,0 +1,347 @@
+<div class="content-centered">
+  <div class="page-header">
+    <h1>Event History</h1>
+    <% if @user %>
+      <p>Events for <strong><%= @user.name || @user.email %></strong></p>
+    <% else %>
+      <p>All system events</p>
+    <% end %>
+  </div>
+  
+  <div class="events-stats">
+    <div class="stat-card">
+      <h3><%= @events.count %></h3>
+      <p>Total Events</p>
+    </div>
+    <% if @user %>
+      <div class="stat-card">
+        <h3><%= @user.event_logs.page_views.count %></h3>
+        <p>Page Views</p>
+      </div>
+      <div class="stat-card">
+        <h3><%= @user.event_logs.clicks.count %></h3>
+        <p>Clicks</p>
+      </div>
+      <div class="stat-card">
+        <h3><%= @user.event_logs.auth_events.count %></h3>
+        <p>Auth Events</p>
+      </div>
+    <% end %>
+  </div>
+  
+  <div class="events-filters">
+    <%= form_with url: request.path, method: :get, local: true, class: "filter-form" do |f| %>
+      <%= f.select :event_type, 
+          options_for_select([['All Events', '']] + EventLog::EVENT_TYPE_NAMES.map { |k,v| [v, k] }, params[:event_type]),
+          {}, { class: "form-select", onchange: "this.form.submit();" } %>
+      
+      <%= f.date_field :start_date, value: params[:start_date], placeholder: "Start Date", class: "form-input" %>
+      <%= f.date_field :end_date, value: params[:end_date], placeholder: "End Date", class: "form-input" %>
+      <%= f.submit "Filter", class: "btn btn-primary" %>
+      
+      <% if params[:event_type].present? || params[:start_date].present? || params[:end_date].present? %>
+        <%= link_to "Clear Filters", request.path, class: "btn btn-secondary" %>
+      <% end %>
+    <% end %>
+  </div>
+  
+  <div class="events-table-container">
+    <% if @events.any? %>
+      <table class="events-table">
+        <thead>
+          <tr>
+            <% unless @user %>
+              <th>User</th>
+            <% end %>
+            <th>Event Type</th>
+            <th>Details</th>
+            <th>Time</th>
+            <th>IP Address</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @events.each do |event| %>
+            <tr>
+              <% unless @user %>
+                <td>
+                  <% user = User.find_by(id: event.user_id) %>
+                  <% if user %>
+                    <%= link_to user.name || user.email, user_events_path(user), class: "user-link" %>
+                  <% else %>
+                    <span class="text-muted">Deleted User</span>
+                  <% end %>
+                </td>
+              <% end %>
+              <td>
+                <span class="event-badge event-type-<%= event.event_type %>">
+                  <%= event.event_name %>
+                </span>
+              </td>
+              <td>
+                <div class="event-metadata">
+                  <% if event.metadata['page_path'] %>
+                    <div><strong>Page:</strong> <code><%= event.metadata['page_path'] %></code></div>
+                  <% end %>
+                  <% if event.metadata['button_id'] %>
+                    <div><strong>Button:</strong> <%= event.metadata['button_id'] %></div>
+                  <% end %>
+                  <% if event.metadata['referrer'] %>
+                    <div><strong>Referrer:</strong> <%= event.metadata['referrer'] %></div>
+                  <% end %>
+                  <% if event.metadata['device_type'] %>
+                    <div><strong>Device:</strong> <%= event.metadata['device_type'] %></div>
+                  <% end %>
+                  <% if event.metadata.present? && event.metadata.keys.length > 2 %>
+                    <details class="metadata-details">
+                      <summary>View All Metadata</summary>
+                      <pre><%= JSON.pretty_generate(event.metadata) %></pre>
+                    </details>
+                  <% end %>
+                </div>
+              </td>
+              <td>
+                <div class="event-time">
+                  <div><%= event.occurred_at.strftime("%b %d, %Y") %></div>
+                  <div class="time-small"><%= event.occurred_at.strftime("%I:%M %p") %></div>
+                  <div class="time-ago">(<%= time_ago_in_words(event.occurred_at) %> ago)</div>
+                </div>
+              </td>
+              <td>
+                <code class="ip-address"><%= event.ip_address || 'N/A' %></code>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+      
+      <% if defined?(Kaminari) && @events.respond_to?(:current_page) %>
+        <div class="pagination-container">
+          <%= paginate @events %>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="empty-state">
+        <h3>No events found</h3>
+        <p>No events match your current filters.</p>
+      </div>
+    <% end %>
+  </div>
+  
+  <% if @user %>
+    <div class="back-link">
+      <%= link_to "← Back to All Users", users_path, class: "btn btn-secondary" %>
+    </div>
+  <% end %>
+</div>
+
+<style>
+  .page-header {
+    margin-bottom: 1.5rem;
+  }
+  
+  .events-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .stat-card {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .stat-card h3 {
+    font-size: 1.5rem;
+    margin: 0 0 0.5rem 0;
+    color: #007bff;
+  }
+  
+  .stat-card p {
+    margin: 0;
+    color: #666;
+    font-size: 0.9rem;
+  }
+  
+  .events-filters {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .filter-form {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  
+  .form-select, .form-input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9rem;
+  }
+  
+  .events-table-container {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .events-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .events-table th,
+  .events-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+    vertical-align: top;
+  }
+  
+  .events-table th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+    color: #495057;
+  }
+  
+  .events-table tr:hover {
+    background-color: #f5f5f5;
+  }
+  
+  .event-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75em;
+    font-weight: bold;
+    color: white;
+  }
+  
+  .event-type-1 { background-color: #17a2b8; } /* Page View */
+  .event-type-2 { background-color: #6f42c1; } /* Click */
+  .event-type-3 { background-color: #28a745; } /* Signup */
+  .event-type-4 { background-color: #007bff; } /* Login */
+  .event-type-5 { background-color: #6c757d; } /* Logout */
+  .event-type-6 { background-color: #ffc107; color: #000; } /* Subscribe */
+  .event-type-7 { background-color: #dc3545; } /* Unsubscribe */
+  .event-type-8 { background-color: #20c997; } /* Upgrade */
+  .event-type-9 { background-color: #fd7e14; } /* Downgrade */
+  .event-type-10 { background-color: #e83e8c; } /* Delete */
+  
+  .event-metadata {
+    font-size: 0.85rem;
+  }
+  
+  .event-metadata div {
+    margin-bottom: 0.25rem;
+  }
+  
+  .metadata-details {
+    margin-top: 0.5rem;
+  }
+  
+  .metadata-details pre {
+    background: #f8f9fa;
+    padding: 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  
+  .event-time {
+    font-size: 0.85rem;
+  }
+  
+  .time-small {
+    color: #666;
+    font-size: 0.8rem;
+  }
+  
+  .time-ago {
+    color: #999;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+  }
+  
+  .ip-address {
+    background: #f8f9fa;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'SF Mono', Monaco, monospace;
+    font-size: 0.8em;
+    color: #495057;
+  }
+  
+  .user-link {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  
+  .user-link:hover {
+    text-decoration: underline;
+  }
+  
+  .empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #666;
+  }
+  
+  .pagination-container {
+    padding: 1rem;
+    text-align: center;
+    border-top: 1px solid #eee;
+  }
+  
+  .back-link {
+    margin-top: 1.5rem;
+  }
+  
+  .btn {
+    display: inline-block;
+    padding: 8px 16px;
+    margin-right: 8px;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: 500;
+    text-align: center;
+    border: 1px solid transparent;
+    cursor: pointer;
+  }
+  
+  .btn-primary {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  .btn-secondary {
+    background-color: #6c757d;
+    color: white;
+  }
+  
+  .text-muted {
+    color: #6c757d;
+  }
+  
+  code {
+    background: #f8f9fa;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'SF Mono', Monaco, monospace;
+    font-size: 0.9em;
+    color: #e83e8c;
+  }
+</style>

@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# Script to completely reset Docker environment for growth project
+
+set -e
+
+echo "🧹 Cleaning up Docker environment..."
+
+# Stop and remove all containers
+docker-compose -f docker-compose.test.yml down -v 2>/dev/null || true
+docker-compose down -v 2>/dev/null || true
+
+# Remove project-specific images
+echo "🗑️  Removing old images..."
+docker rmi $(docker images | grep growth | awk '{print $3}') 2>/dev/null || true
+
+# Remove dangling images and containers
+echo "🧽 Cleaning up system..."
+docker system prune -f
+
+# Rebuild from scratch
+echo "🔨 Rebuilding development image..."
+docker-compose build --no-cache web
+
+echo "🔨 Rebuilding test image..."
+docker-compose -f docker-compose.test.yml build --no-cache test
+
+echo "✅ Docker environment reset complete!"
+echo "Now try: ./bin/test"

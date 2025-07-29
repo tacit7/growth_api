@@ -4,7 +4,7 @@ Mongoid.configure do
 
   # Load Mongoid behavior defaults. This automatically sets
   # features flags (refer to documentation)
- config.load_defaults target_version
+  config.load_defaults target_version
 
   # It is recommended to use config/mongoid.yml for most Mongoid-related
   # configuration, whenever possible, but if you prefer, you can set

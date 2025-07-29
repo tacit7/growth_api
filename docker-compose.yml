@@ -1,17 +1,6 @@
 version: "3.9"
 
 services:
-  test:
-    build: .
-    command: bundle exec rspec
-    volumes:
-      - .:/app
-    environment:
-      - RAILS_ENV=test
-      - REDIS_URL=redis://redis:6379/1
-    depends_on:
-      - redis
-      - db
   db:
     image: postgres:15
     ports:
@@ -37,6 +26,7 @@ services:
   web:
     build:
       context: .
+      dockerfile: Dockerfile.dev
     command: bash -c "bin/rails server -b 0.0.0.0 -p 3000"
     volumes:
       - .:/app

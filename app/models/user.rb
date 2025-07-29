@@ -7,7 +7,11 @@ class User < ApplicationRecord
   enum :role, [ :user, :admin ]
   enum :subscription_type, [ :free, :premium ]
 
-  has_many :events, class_name: "EventLog", dependent: :destroy
+  # Associations
+  has_many :event_logs, dependent: :destroy
+  
+  # Alias for more natural usage
+  alias_method :events, :event_logs
 
   devise :database_authenticatable, :registerable,
   :recoverable, :rememberable, :validatable,
@@ -21,5 +25,28 @@ class User < ApplicationRecord
   def set_defaults
     self.role ||= :user
     self.subscription_type ||= :free
+  end
+  
+  # Event logging convenience methods
+  def log_event(event_type, metadata = {}, occurred_at: Time.current)
+    event_logs.create!(
+      event_type: event_type.is_a?(String) ? EventLog::EVENT_TYPES[event_type] : event_type,
+      metadata: metadata,
+      occurred_at: occurred_at,
+      ip_address: metadata.delete(:ip_address),
+      user_agent: metadata.delete(:user_agent)
+    )
+  end
+  
+  def recent_events(limit = 10)
+    event_logs.recent.limit(limit)
+  end
+  
+  def page_views
+    event_logs.page_views
+  end
+  
+  def subscription_events
+    event_logs.subscription_events
   end
 end

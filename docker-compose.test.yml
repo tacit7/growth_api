@@ -1,0 +1,37 @@
+version: "3.9"
+
+services:
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    command: bundle exec rspec
+    volumes:
+      - .:/app
+    environment:
+      - RAILS_ENV=test
+      - DATABASE_HOST=db
+      - DATABASE_USERNAME=postgres
+      - DATABASE_PASSWORD=password
+      - REDIS_URL=redis://redis:6379/1
+      - MONGODB_URI=mongodb://mongo:27017/growth_api_test
+    depends_on:
+      - db
+      - redis
+      - mongo
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    tmpfs:
+      - /var/lib/postgresql/data  # Use tmpfs for faster test DB
+
+  redis:
+    image: redis:7
+
+  mongo:
+    image: mongo:6
+    tmpfs:
+      - /data/db  # Use tmpfs for faster test MongoDB

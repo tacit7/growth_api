@@ -24,5 +24,10 @@ module Growth
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
+    
+    # Default to ActiveRecord for generators (since we use both AR and Mongoid)
+    config.generators do |g|
+      g.orm :active_record
+    end
   end
 end

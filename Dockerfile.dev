@@ -1,0 +1,39 @@
+# syntax=docker/dockerfile:1
+
+ARG RUBY_VERSION=3.3.4
+FROM ruby:$RUBY_VERSION-slim
+
+# Rails app lives here
+WORKDIR /rails
+
+# Update gems and bundler
+RUN gem update --system --no-document && \
+    gem install -N bundler
+
+# Install packages needed for development and testing
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y \
+    build-essential \
+    curl \
+    libjemalloc2 \
+    libpq-dev \
+    postgresql-client \
+    libyaml-dev \
+    && rm -rf /var/lib/apt/lists /var/cache/apt/archives
+
+# Set development environment
+ENV RAILS_ENV="development"
+ENV BUNDLE_WITHOUT=""
+
+# Install application gems (including dev/test gems)
+COPY Gemfile Gemfile.lock ./
+RUN bundle install
+
+# Copy application code
+COPY . .
+
+# Expose port
+EXPOSE 3000
+
+# Default command
+CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0"]

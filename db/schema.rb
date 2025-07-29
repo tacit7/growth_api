@@ -10,9 +10,26 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_07_24_043633) do
+ActiveRecord::Schema[7.2].define(version: 2025_07_29_132042) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "event_logs", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.integer "event_type", null: false
+    t.jsonb "metadata", default: {}
+    t.string "ip_address"
+    t.string "user_agent"
+    t.datetime "occurred_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["event_type", "occurred_at"], name: "index_event_logs_on_event_type_and_occurred_at"
+    t.index ["event_type"], name: "index_event_logs_on_event_type"
+    t.index ["metadata"], name: "index_event_logs_on_metadata", using: :gin
+    t.index ["occurred_at"], name: "index_event_logs_on_occurred_at"
+    t.index ["user_id", "occurred_at"], name: "index_event_logs_on_user_id_and_occurred_at"
+    t.index ["user_id"], name: "index_event_logs_on_user_id"
+  end
 
   create_table "events", force: :cascade do |t|
     t.bigint "user_id", null: false
@@ -40,10 +57,12 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_24_043633) do
     t.integer "role"
     t.integer "subscription_type"
     t.string "jti"
+    t.string "name"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["jti"], name: "index_users_on_jti"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  add_foreign_key "event_logs", "users"
   add_foreign_key "events", "users"
 end

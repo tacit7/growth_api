@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+# Script to display a random user's login credentials for testing
+
+set -e
+
+# Colors for output
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
+
+# Function to print colored output
+print_header() {
+    echo -e "${BLUE}================================${NC}"
+    echo -e "${BLUE}   Random User Credentials${NC}"
+    echo -e "${BLUE}================================${NC}"
+}
+
+print_user() {
+    echo -e "${GREEN}Email:${NC}    $1"
+    echo -e "${YELLOW}Password:${NC} $2"
+    echo -e "${CYAN}Name:${NC}     $3"
+    echo -e "${CYAN}Role:${NC}     $4"
+    echo -e "${CYAN}Plan:${NC}     $5"
+}
+
+print_footer() {
+    echo -e "${BLUE}================================${NC}"
+    echo -e "${GREEN}All seed users have password 'password123'${NC}"
+}
+
+# Fallback for non-Docker environments
+print_header
+
+USER_INFO=$(bundle exec rails runner "
+  begin
+    user = User.order('RANDOM()').first
+    if user
+      puts [user.email, user.name || 'N/A', user.role, user.subscription_type].join('|||')
+    else
+      puts 'NO_USERS_FOUND'
+    end
+  rescue => e
+    puts \"ERROR: \#{e.message}\"
+  end
+" 2>/dev/null | tail -1)
+
+if [ "$USER_INFO" = "NO_USERS_FOUND" ]; then
+    echo -e "${YELLOW}No users found in database.${NC}"
+    echo -e "${GREEN}Run: rails db:seed${NC}"
+elif [[ "$USER_INFO" == ERROR:* ]]; then
+    echo -e "${YELLOW}Database error: ${USER_INFO}${NC}"
+    echo -e "${GREEN}Make sure your database is set up and seeded${NC}"
+else
+    # Parse the user info using triple pipe separator
+    IFS='|||' read -r email name role subscription_type <<< "$USER_INFO"
+    print_user "$email" "password123" "$name" "$role" "$subscription_type"
+fi
+print_footer
+fi
+
+echo ""
+echo -e "${GREEN}Ready to test? Use these credentials at:${NC}"
+echo -e "${CYAN}   Web: http://localhost:3000/login${NC}"
+echo -e "${CYAN}   API: POST http://localhost:3000/v1/login${NC}"
