@@ -41,6 +41,7 @@ get '/events', to: 'events#index'
       }
 
     get    '/profile',       to: 'users#profile'
+    get    '/events',        to: 'user_events#index'
     post   '/subscribe',     to: 'subscriptions#create'
     delete '/unsubscribe',   to: 'unsubs#destroy'
     post   '/event',         to: 'events#create'
