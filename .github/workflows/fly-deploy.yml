@@ -8,7 +8,7 @@ on:
     types:
       - completed
     branches:
-      - main     - main
+      - main
 jobs:
   deploy:
     name: Deploy app
