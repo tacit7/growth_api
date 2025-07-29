@@ -1,0 +1,215 @@
+# Omakase Ruby styling for Rails
+inherit_gem: { rubocop-rails-omakase: rubocop.yml }
+
+# Overwrite or add rules to create your own house style
+#
+# # Use `[a, [b, c]]` not `[ a, [ b, c ] ]`
+# Layout/SpaceInsideArrayLiteralBrackets:
+#   Enabled: false
+plugins:
+  - rubocop-rails
+  - rubocop-packaging
+  - rubocop-performance
+  - rubocop-rspec
+  - rubocop-thread_safety
+
+AllCops:
+  NewCops: enable
+  TargetRubyVersion: 3.1
+  TargetRailsVersion: 7.0
+  Exclude:
+    - "bin/*"
+    - "db/schema.rb"
+    - "db/migrate/*"
+    - "node_modules/**/*"
+    - "vendor/**/*"
+    - "tmp/**/*"
+    - "log/**/*"
+    - "storage/**/*"
+    - "config/boot.rb"
+    - "config/environment.rb"
+    - "config/initializers/devise.rb"
+
+# Layout & Formatting
+Layout/LineLength:
+  Max: 120
+  AllowedPatterns: ['\A#']
+
+Layout/MultilineMethodCallIndentation:
+  EnforcedStyle: indented
+
+Layout/MultilineOperationIndentation:
+  EnforcedStyle: indented
+
+Layout/ParameterAlignment:
+  EnforcedStyle: with_fixed_indentation
+
+Layout/ArgumentAlignment:
+  EnforcedStyle: with_fixed_indentation
+
+Layout/ArrayAlignment:
+  EnforcedStyle: with_fixed_indentation
+
+Layout/HashAlignment:
+  EnforcedHashRocketStyle: table
+  EnforcedColonStyle: table
+
+# Style
+Style/Documentation:
+  Enabled: false
+
+Style/FrozenStringLiteralComment:
+  Enabled: true
+  EnforcedStyle: always
+
+Style/StringLiterals:
+  Enabled: false
+
+Style/StringLiteralsInInterpolation:
+  EnforcedStyle: double_quotes
+
+Style/ClassAndModuleChildren:
+  EnforcedStyle: compact
+
+Style/TrailingCommaInArguments:
+  EnforcedStyleForMultiline: comma
+
+Style/TrailingCommaInArrayLiteral:
+  EnforcedStyleForMultiline: comma
+
+Style/TrailingCommaInHashLiteral:
+  EnforcedStyleForMultiline: comma
+
+Style/EmptyMethod:
+  EnforcedStyle: expanded
+
+Style/Lambda:
+  EnforcedStyle: literal
+
+Style/HashSyntax:
+  EnforcedStyle: ruby19_no_mixed_keys
+
+# Metrics
+Metrics/ClassLength:
+  Max: 150
+
+Metrics/ModuleLength:
+  Max: 150
+
+Metrics/MethodLength:
+  Max: 30
+  Exclude:
+    - "db/migrate/*"
+
+Metrics/BlockLength:
+  Max: 25
+  Exclude:
+    - "spec/**/*"
+    - "config/routes.rb"
+    - "config/environments/*"
+    - "db/migrate/*"
+    - "Rakefile"
+    - "*.gemspec"
+
+Metrics/AbcSize:
+  Max: 30
+
+Metrics/CyclomaticComplexity:
+  Max: 10
+
+Metrics/PerceivedComplexity:
+  Max: 10
+
+# Rails specific
+Rails/HasManyOrHasOneDependent:
+  Enabled: true
+
+Rails/InverseOf:
+  Enabled: false
+
+Rails/SkipsModelValidations:
+  Enabled: false
+
+Rails/UnknownEnv:
+  Environments:
+    - production
+    - development
+    - test
+    - staging
+
+Rails/Output:
+  Exclude:
+    - "db/migrate/*"
+    - "db/seeds.rb"
+
+# RSpec specific
+RSpec/ExampleLength:
+  Max: 20
+
+RSpec/MultipleExpectations:
+  Max: 5
+
+RSpec/NestedGroups:
+  Max: 5
+
+RSpec/DescribeClass:
+  Exclude:
+    - "spec/requests/**/*"
+    - "spec/features/**/*"
+    - "spec/system/**/*"
+    - "spec/integration/**/*"
+
+RSpec/SpecFilePathFormat:
+  Enabled: false
+
+RSpec/SpecFilePathSuffix:
+  Enabled: false
+
+# Performance
+Performance/RedundantMerge:
+  Enabled: true
+
+Performance/StartWith:
+  Enabled: true
+
+Performance/EndWith:
+  Enabled: true
+
+Performance/RegexpMatch:
+  Enabled: true
+
+# Thread Safety
+ThreadSafety/NewThread:
+  Enabled: true
+
+# Packaging
+Packaging/BundlerSetupInTests:
+  Enabled: true
+
+Packaging/RequireHardcodingLib:
+  Enabled: true
+
+# Naming
+Naming/MemoizedInstanceVariableName:
+  EnforcedStyleForLeadingUnderscores: required
+
+Naming/PredicatePrefix:
+  ForbiddenPrefixes:
+    - is_
+
+# Additional customizations
+Style/IfUnlessModifier:
+  Enabled: false
+
+Style/NumericPredicate:
+  EnforcedStyle: comparison
+
+Style/ZeroLengthPredicate:
+  Enabled: true
+
+Style/NilComparison:
+  EnforcedStyle: predicate
+
+Lint/AmbiguousBlockAssociation:
+  Exclude:
+    - "spec/**/*"
