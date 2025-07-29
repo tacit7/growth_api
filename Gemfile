@@ -87,7 +87,7 @@ group :test do
   gem "selenium-webdriver"
 end
 
-gem "sidekiq", "~> 8.0"
+gem "sidekiq", "7.2.1"
 gem 'pundit'
 
 gem "rest-client", "~> 2.1"

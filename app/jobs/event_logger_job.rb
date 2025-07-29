@@ -5,17 +5,18 @@ class EventLoggerJob < ApplicationJob
 
   def perform(args)
     user = User.find(args[:user_id])
-    event_type_id = EventLog::EVENT_TYPES[args[:event_type]] || args[:event_type]
     
-    EventLog.create!(
+    Event.create!(
       user: user,
-      event_type: event_type_id,
-      metadata: args.fetch(:event_data, {}).merge(
-        ip_address: args[:ip_address],
-        user_agent: args[:user_agent]
-      ),
-      occurred_at: Time.iso8601(args[:occurred_at])
+      event_type: args[:event_type],
+      event_data: args.fetch(:event_data, {}),
+      occurred_at: Time.iso8601(args[:occurred_at]),
+      ip_address: args[:ip_address],
+      user_agent: args[:user_agent]
     )
+  rescue StandardError => e
+    Rails.logger.error "EventLoggerJob failed: #{e.message}"
+    raise e # Re-raise for Sidekiq retry logic
   end
 
   def self.run_it(args)

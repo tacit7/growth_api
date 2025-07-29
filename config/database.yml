@@ -15,6 +15,9 @@ test:
   database: growth_test
 
 production:
-  <<: *default
+  adapter: postgresql
+  encoding: unicode
+  url: <%= ENV.fetch("DATABASE_URL") { "postgres://postgres:password@db/growth_production" } %>
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
   database: growth_production
   # Additional config like prepared_statements, reaping_frequency etc.

@@ -4,6 +4,7 @@ module Api
   module V1
     class EventsController < Api::V1::BaseController
       before_action :authenticate_v1_user!
+      before_action :check_rate_limit
       before_action :validate_event_params
 
       def create
@@ -33,7 +34,7 @@ module Api
         unless valid_event_type?(params[:event_type])
           render json: { 
             error: 'Invalid event_type', 
-            valid_types: EventLog::EVENT_TYPES.keys 
+            valid_types: Event::EVENT_TYPES.keys 
           }, status: :bad_request
           return false
         end
@@ -41,8 +42,14 @@ module Api
         true
       end
 
+      def check_rate_limit
+        unless RateLimiter.check(user_id: current_v1_user.id, action: 'create_event', limit: 1000, window: 1.hour)
+          render json: { error: 'Rate limit exceeded' }, status: :too_many_requests
+        end
+      end
+
       def valid_event_type?(event_type)
-        EventLog::EVENT_TYPES.key?(event_type) || EventLog::EVENT_TYPES.value?(event_type.to_i)
+        Event::EVENT_TYPES.key?(event_type.to_sym) || Event::EVENT_TYPES.value?(event_type.to_i)
       end
 
       def sanitized_event_type
