@@ -1,80 +1,149 @@
 # Growth API
 
-Ruby on Rails 7 API backend for a subscription-based analytics platform.
-Supports user registration, JWT authentication, premium subscription upgrades, event logging, and a simple admin analytics dashboard.
+Rails 7 API for a subscription platform with user management, analytics, and event tracking.
 
 ## Features
 
-- User signup and login (JWT-based)
-- Subscription management (free and premium)
-- Event tracking
-- Admin dashboard
-- Role-based access
+- User signup/login with JWT authentication
+- Free and premium subscriptions
+- Event tracking and analytics
+- Admin dashboard with metrics
+- Rate limiting and caching
+- Background job processing
 
 ## Tech Stack
 
-- Ruby 3.3.4
-- Rails 7
-- PostgreSQL
-- Devise + Devise-JWT
-- RSpec, FactoryBot, and Faker
-- Docker for development environment
-- MongoDB for event logs
-- Redis for caching
-- Sidekiq for background log persistence
+- Ruby 3.3.4 + Rails 7.2
+- PostgreSQL (users, subscriptions)
+- Redis (caching, rate limiting)
+- Devise + JWT for authentication
+- Sidekiq for background jobs
+- RSpec for testing
 
-## Setup
+## Quick Start
+
+### Using Docker (Recommended)
 
 ```bash
-# Clone the repository
-git clone https://github.com/your_username/growth_api.git
+git clone <your-repo-url>
 cd growth_api
 
-# Copy environment config
+# Copy environment variables
 cp .env.example .env
 
-# Build and run using Docker
-docker-compose build
-docker-compose up
+# Start services
+docker-compose up --build
 
-# Setup the database
-./bin/drails db:create db:migrate
+# Run migrations in another terminal
+docker-compose exec web bin/rails db:create db:migrate
+
+# Create admin user (optional)
+docker-compose exec web bin/rails console
+> User.create!(email: 'admin@example.com', password: 'password123', role: 'admin')
 ```
 
-## Running Tests
+### Local Development
 
 ```bash
-drails rspec spec
+# Install dependencies
+bundle install
+
+# Setup database
+bin/rails db:create db:migrate
+
+# Start Redis and PostgreSQL locally
+# Then start Rails
+bin/rails server
 ```
 
-## Authentication
+## API Usage
 
-- JWT is issued on login
-- Use the token in the `Authorization` header for protected routes:
+### Authentication
 
+All API endpoints use `/v1` prefix and require JWT tokens (except signup/login).
+
+```bash
+# Sign up
+curl -X POST http://localhost:3000/v1/signup \
+  -H "Content-Type: application/json" \
+  -d '{"user":{"email":"test@example.com","password":"password123","name":"Test User"}}'
+
+# Login (returns JWT token)
+curl -X POST http://localhost:3000/v1/login \
+  -H "Content-Type: application/json" \
+  -d '{"user":{"email":"test@example.com","password":"password123"}}'
+
+# Use token for protected routes
+curl -H "Authorization: Bearer YOUR_JWT_TOKEN" http://localhost:3000/v1/profile
 ```
-Authorization: Bearer <token>
+
+### Main Endpoints
+
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| POST | `/v1/signup` | Create account | No |
+| POST | `/v1/login` | Get JWT token | No |
+| GET | `/v1/profile` | User details | Yes |
+| POST | `/v1/subscribe` | Upgrade to premium | Yes |
+| POST | `/v1/event` | Log user activity | Yes |
+| GET | `/v1/admin/analytics/dashboard` | Admin metrics | Yes (Admin) |
+
+### Event Logging
+
+```bash
+curl -X POST http://localhost:3000/v1/event \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"event_type":"Page View","event_data":{"page_path":"/dashboard","referrer":"google.com"}}'
 ```
 
-## API Endpoints
+Valid event types: `Page View`, `Click`, `Signup`, `Login`, `Logout`, `Subscribe`, `Unsubscribe`, `Upgrade Plan`, `Downgrade Plan`, `Delete Account`
 
-| Method | Endpoint     | Description                   |
-| ------ | ------------ | ----------------------------- |
-| POST   | /signup      | Register a new user           |
-| POST   | /login       | Authenticate user and get JWT |
-| GET    | /profile     | Return logged-in user details |
-| POST   | /subscribe   | Upgrade user to premium       |
-| DELETE | /unsubscribe | Upgrade user to premium       |
-| POST   | /event       | Log user activity             |
+## Testing
 
-## CI/CD
+```bash
+# Run all tests
+bin/rails spec
 
-- GitHub Actions used for continuous integration and testing
+# Run specific test files
+bin/rails spec spec/requests/api/v1/
+```
 
-## Documentation
+## Environment Variables
 
-- Basic API usage documented via [Postman](https://documenter.getpostman.com/view/29345048/2sB34oBcx7)
+Required variables in `.env`:
 
-## Loom Walkthrough
+```bash
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/growth_development
+REDIS_URL=redis://localhost:6379/0
+DEVISE_JWT_SECRET_KEY=your_jwt_secret_here
+SECRET_KEY_BASE=your_secret_key_base_here
+```
 
-A short video walkthrough is available at: [loom.com/your-video-url](https://loom.com/your-video-url)
+Generate secrets with:
+```bash
+bin/rails secret
+```
+
+## Security Features
+
+- Rate limiting (5 requests/minute per IP)
+- Input validation and sanitization
+- JWT token authentication
+- Admin role verification
+- SQL injection protection via ActiveRecord
+
+## Development Notes
+
+- Background jobs process events asynchronously
+- User profiles cached for 10 minutes
+- Admin analytics cached for 1 hour
+- Rate limits stored in Redis with TTL
+
+## Architecture
+
+- **Controllers**: Handle HTTP requests, authentication, rate limiting
+- **Services**: Business logic (SubscriptionService)
+- **Jobs**: Background processing (EventLoggerJob)
+- **Models**: Data layer with validations and associations
+- **Serializers**: JSON API responses

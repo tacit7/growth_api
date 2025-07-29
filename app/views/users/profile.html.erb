@@ -52,7 +52,7 @@
         <% end %>
       </div>
       <div class="text-center mt-3">
-        <%= link_to "View All Activity", events_user_path(current_user), class: "btn btn-secondary" %>
+        <%= link_to "View All Activity", user_events_path(current_user), class: "btn btn-secondary" %>
       </div>
     <% else %>
       <p class="text-muted">No recent activity</p>

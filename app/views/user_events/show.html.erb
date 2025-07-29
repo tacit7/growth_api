@@ -1,0 +1,194 @@
+<% content_for :title, "Event Details" %>
+
+<div class="event-details-container">
+  <div class="breadcrumb">
+    <%= link_to user_events_path(@user), class: "back-link" do %>
+      ← Back to Events
+    <% end %>
+  </div>
+  
+  <h1>Event Details</h1>
+
+  <div class="event-card">
+    <div class="event-header">
+      <span class="event-badge event-<%= @event.event_name.downcase.gsub(' ', '-') %>">
+        <%= @event.event_name %>
+      </span>
+      <p class="event-timestamp">Occurred <%= time_ago_in_words(@event.occurred_at) %> ago</p>
+    </div>
+    
+    <div class="event-info">
+      <div class="info-row">
+        <dt>Event Type</dt>
+        <dd><%= @event.event_name %></dd>
+      </div>
+      
+      <div class="info-row">
+        <dt>Timestamp</dt>
+        <dd><%= @event.occurred_at.strftime('%B %d, %Y at %I:%M %p') %></dd>
+      </div>
+      
+      <div class="info-row">
+        <dt>User</dt>
+        <dd>
+          <%= @event.user.email %>
+          <span class="subscription-badge"><%= @event.user.subscription_type.humanize %></span>
+        </dd>
+      </div>
+      
+      <% if @event.ip_address.present? %>
+      <div class="info-row">
+        <dt>IP Address</dt>
+        <dd><%= @event.ip_address %></dd>
+      </div>
+      <% end %>
+      
+      <% if @event.user_agent.present? %>
+      <div class="info-row">
+        <dt>User Agent</dt>
+        <dd class="user-agent"><%= truncate(@event.user_agent, length: 100) %></dd>
+      </div>
+      <% end %>
+      
+      <div class="info-row">
+        <dt>Metadata</dt>
+        <dd>
+          <% if @event.metadata.present? && @event.metadata.any? %>
+            <div class="metadata-list">
+              <% @event.metadata.each do |key, value| %>
+                <div class="metadata-item">
+                  <strong><%= key.humanize %>:</strong> <%= value %>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <em>No additional metadata</em>
+          <% end %>
+        </dd>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.event-details-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.breadcrumb {
+  margin-bottom: 20px;
+}
+
+.back-link {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+.event-details-container h1 {
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  color: #333;
+}
+
+.event-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.event-header {
+  padding: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.event-badge {
+  padding: 6px 12px;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  display: inline-block;
+}
+
+.event-page-view { background: #e3f2fd; color: #1976d2; }
+.event-click { background: #e8f5e8; color: #388e3c; }
+.event-login, .event-signup { background: #f3e5f5; color: #7b1fa2; }
+.event-logout { background: #f5f5f5; color: #424242; }
+.event-subscribe, .event-upgrade-plan { background: #fff3e0; color: #f57c00; }
+.event-unsubscribe, .event-downgrade-plan { background: #ffebee; color: #d32f2f; }
+
+.event-timestamp {
+  color: #666;
+  margin: 0;
+}
+
+.event-info {
+  padding: 0;
+}
+
+.info-row {
+  display: flex;
+  padding: 15px 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-row:nth-child(even) {
+  background: #f8f9fa;
+}
+
+.info-row dt {
+  font-weight: bold;
+  color: #666;
+  width: 120px;
+  flex-shrink: 0;
+}
+
+.info-row dd {
+  margin: 0;
+  flex: 1;
+}
+
+.subscription-badge {
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  margin-left: 10px;
+}
+
+.user-agent {
+  font-family: monospace;
+  font-size: 0.85rem;
+  background: #f5f5f5;
+  padding: 5px;
+  border-radius: 3px;
+}
+
+.metadata-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.metadata-item {
+  font-size: 0.9rem;
+}
+
+.metadata-item strong {
+  color: #666;
+}
+</style>

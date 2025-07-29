@@ -1,0 +1,298 @@
+<% content_for :title, "User Events" %>
+
+<div class="user-events-container">
+  <div class="header">
+    <h1><%= @user == current_user ? "My Events" : "#{@user.email}'s Events" %></h1>
+    <p>Track user activity and engagement</p>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-section">
+    <%= form_with url: user_events_path(@user), method: :get, local: true, class: "filters-form" do |form| %>
+      <div class="form-group">
+        <%= form.label :event_type, "Event Type" %>
+        <%= form.select :event_type, 
+            options_for_select([["All Events", ""]] + @event_types.map { |type| [type, type] }, @selected_event_type) %>
+      </div>
+      
+      <div class="form-group">
+        <%= form.label :date_from, "From Date" %>
+        <%= form.date_field :date_from, value: @date_from %>
+      </div>
+      
+      <div class="form-group">
+        <%= form.label :date_to, "To Date" %>
+        <%= form.date_field :date_to, value: @date_to %>
+      </div>
+      
+      <div class="form-group">
+        <%= form.submit "Filter", class: "btn btn-primary" %>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-cards">
+    <div class="card">
+      <h3>Total Events</h3>
+      <p class="metric"><%= @events.respond_to?(:total_count) ? @events.total_count : @events.count %></p>
+    </div>
+    
+    <div class="card">
+      <h3>Today's Events</h3>
+      <p class="metric"><%= @user.event_logs.where(occurred_at: Date.current.all_day).count %></p>
+    </div>
+    
+    <div class="card">
+      <h3>This Week</h3>
+      <p class="metric"><%= @user.event_logs.where(occurred_at: 1.week.ago..Time.current).count %></p>
+    </div>
+  </div>
+
+  <!-- Events List -->
+  <div class="events-section">
+    <h3>Recent Events</h3>
+    
+    <% if @events.any? %>
+      <div class="events-list">
+        <% @events.each do |event| %>
+          <div class="event-item">
+            <%= link_to user_event_path(@user, event), class: "event-link" do %>
+              <div class="event-header">
+                <span class="event-badge event-<%= event.event_name.downcase.gsub(' ', '-') %>">
+                  <%= event.event_name %>
+                </span>
+                <span class="event-time"><%= event.occurred_at.strftime('%m/%d/%Y %I:%M %p') %></span>
+              </div>
+              
+              <div class="event-details">
+                <strong><%= event.metadata&.dig('page_path') || 'N/A' %></strong>
+                <small><%= time_ago_in_words(event.occurred_at) %> ago</small>
+              </div>
+              
+              <% if event.metadata.present? && event.metadata.any? %>
+                <div class="event-metadata">
+                  <% event.metadata.first(3).each do |key, value| %>
+                    <span class="metadata-item">
+                      <strong><%= key.humanize %>:</strong> <%= truncate(value.to_s, length: 50) %>
+                    </span>
+                  <% end %>
+                </div>
+              <% end %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+      
+      <!-- Pagination -->
+      <% if @events.respond_to?(:total_pages) && @events.total_pages > 1 %>
+        <div class="pagination-wrapper">
+          <%= paginate @events %>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="no-events">
+        <h3>No events found</h3>
+        <p>
+          <% if @selected_event_type.present? || @date_from.present? || @date_to.present? %>
+            Try adjusting your filters to see more results.
+          <% else %>
+            Events will appear here as the user interacts with the application.
+          <% end %>
+        </p>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<style>
+.user-events-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.header h1 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.header p {
+  color: #666;
+  margin-bottom: 2rem;
+}
+
+.filters-section {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.filters-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  align-items: end;
+}
+
+.form-group label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.form-group select,
+.form-group input[type="date"] {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-primary {
+  background: #007bff;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #0056b3;
+}
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.card h3 {
+  margin: 0 0 10px 0;
+  color: #666;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+.metric {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 0;
+  color: #333;
+}
+
+.events-section {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.events-section h3 {
+  padding: 20px;
+  margin: 0;
+  border-bottom: 1px solid #eee;
+}
+
+.events-list {
+  padding: 0;
+}
+
+.event-item {
+  border-bottom: 1px solid #eee;
+}
+
+.event-item:last-child {
+  border-bottom: none;
+}
+
+.event-link {
+  display: block;
+  padding: 20px;
+  text-decoration: none;
+  color: inherit;
+  transition: background-color 0.2s;
+}
+
+.event-link:hover {
+  background: #f8f9fa;
+}
+
+.event-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.event-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.event-page-view { background: #e3f2fd; color: #1976d2; }
+.event-click { background: #e8f5e8; color: #388e3c; }
+.event-login, .event-signup { background: #f3e5f5; color: #7b1fa2; }
+.event-logout { background: #f5f5f5; color: #424242; }
+.event-subscribe, .event-upgrade-plan { background: #fff3e0; color: #f57c00; }
+.event-unsubscribe, .event-downgrade-plan { background: #ffebee; color: #d32f2f; }
+
+.event-time {
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.event-details {
+  margin-bottom: 10px;
+}
+
+.event-details strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.event-details small {
+  color: #666;
+}
+
+.event-metadata {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.metadata-item {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.no-events {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+}
+
+.pagination-wrapper {
+  padding: 20px;
+  text-align: center;
+  border-top: 1px solid #eee;
+}
+</style>

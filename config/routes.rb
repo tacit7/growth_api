@@ -1,14 +1,11 @@
 # frozen_string_literal: true
 
 Rails.application.routes.draw do
-  # Root path (for HTML fallback or base landing page)
   root 'home#index'
+  get '/about', to: 'about#index'
 
-resources :users, only: [ :index, :show, :destroy ] do
-  member do
-    get :events
-  end
-end
+resources :users, only: [ :index, :show, :destroy ]
+resources :user_events, path: 'users/:user_id/events', only: [:index, :show]
 
 get '/profile', to: 'users#profile'
 get '/events', to: 'events#index'
@@ -47,7 +44,7 @@ get '/events', to: 'events#index'
     post   '/subscribe',     to: 'subscriptions#create'
     delete '/unsubscribe',   to: 'unsubs#destroy'
     post   '/event',         to: 'events#create'
-    
+
     namespace :admin do
       get '/analytics/dashboard', to: 'analytics#dashboard'
       get '/analytics/events',    to: 'analytics#events'

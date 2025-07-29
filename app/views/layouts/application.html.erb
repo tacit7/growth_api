@@ -21,9 +21,10 @@
         <%= link_to "Growth API", root_path, class: "nav-brand" %>
         <ul class="nav-links">
           <li><%= link_to "Home", root_path %></li>
+          <li><%= link_to "About", about_path %></li>
           <% if current_user && !current_user.admin? %>
             <li><%= link_to "Profile", profile_path(current_user) %></li>
-            <li><%= link_to "Events",  events_user_path(current_user) %></li>
+            <li><%= link_to "Events",  user_events_path(current_user) %></li>
           <% end %>
           <% if !current_user.nil? && current_user.admin? %>
             <li><%= link_to "Dashboard", admin_dashboard_path %></li>

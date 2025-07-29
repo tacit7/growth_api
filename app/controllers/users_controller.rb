@@ -2,7 +2,7 @@
 
 class UsersController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_user, only: [:show, :destroy, :events]
+  before_action :set_user, only: [:show, :destroy]
   before_action :ensure_admin, only: [:index, :destroy]
   
   def index
@@ -21,40 +21,7 @@ class UsersController < ApplicationController
     })
   end
   
-  def events
-    @user = params[:id] ? User.find(params[:id]) : current_user
-    
-    # Ensure users can only see their own events unless they're admin
-    unless current_user.admin? || @user == current_user
-      redirect_to profile_path, alert: "Access denied"
-      return
-    end
-    
-    @events = @user.event_logs.includes(:user).recent
-    
-    # Apply filters if present
-    if params[:event_type].present?
-      @events = @events.where(event_type: params[:event_type])
-    end
-    
-    if params[:start_date].present?
-      @events = @events.where('occurred_at >= ?', Date.parse(params[:start_date]))
-    end
-    
-    if params[:end_date].present?
-      @events = @events.where('occurred_at <= ?', Date.parse(params[:end_date]).end_of_day)
-    end
-    
-    # Paginate if Kaminari is available
-    @events = @events.page(params[:page]).per(25) if defined?(Kaminari)
-    
-    # Log the page view
-    current_user.log_event('Page View', {
-      page_path: request.path,
-      referrer: request.referer,
-      target_user: @user.id
-    })
-  end
+
   
   def destroy
     if @user == current_user
